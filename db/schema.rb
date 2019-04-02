@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_03_30_193044) do
+ActiveRecord::Schema.define(version: 2019_04_02_073803) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
@@ -19,19 +19,23 @@ ActiveRecord::Schema.define(version: 2019_03_30_193044) do
   create_table "buses", force: :cascade do |t|
     t.string "number"
     t.string "model"
+    t.index ["id", "number", "model"], name: "index_buses_on_id_and_number_and_model"
   end
 
   create_table "buses_services", force: :cascade do |t|
     t.integer "bus_id"
     t.integer "service_id"
+    t.index ["id", "bus_id", "service_id"], name: "index_buses_services_on_id_and_bus_id_and_service_id"
   end
 
   create_table "cities", force: :cascade do |t|
     t.string "name"
+    t.index ["id", "name"], name: "index_cities_on_id_and_name"
   end
 
   create_table "services", force: :cascade do |t|
     t.string "name"
+    t.index ["id", "name"], name: "index_services_on_id_and_name"
   end
 
   create_table "trips", force: :cascade do |t|
@@ -41,6 +45,7 @@ ActiveRecord::Schema.define(version: 2019_03_30_193044) do
     t.integer "duration_minutes"
     t.integer "price_cents"
     t.integer "bus_id"
+    t.index ["id", "from_id", "to_id"], name: "index_trips_on_id_and_from_id_and_to_id"
   end
 
 end
