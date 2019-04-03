@@ -7,10 +7,16 @@ gem 'rails', '~> 5.2.3'
 gem 'pg', '>= 0.18', '< 2.0'
 gem 'puma', '~> 3.11'
 gem 'bootsnap', '>= 1.1.0', require: false
+gem 'activerecord-import'
+gem 'strong_migrations'
 
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
   gem 'byebug', platforms: [:mri, :mingw, :x64_mingw]
+  gem 'rspec-rails', '~> 3.8'
+  gem "rspec-sqlimit"
+  gem 'rails-controller-testing'
+  gem 'capybara'
 end
 
 group :development do
@@ -20,6 +26,7 @@ group :development do
 end
 
 group :test do
+  gem 'database_cleaner'
 end
 
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
