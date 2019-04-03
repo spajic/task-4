@@ -25,4 +25,26 @@ namespace :optimization do
       b.report('small.json') { DbPopulator.populate('fixtures/small.json') }
     end
   end
+
+  <<~VALUES
+    Initial value:
+      0.105
+
+    Cache services creating:
+      0.125
+
+    Cache buses creating:
+      0.152
+
+    Cache cities creating:
+      0.232
+
+    Bulk inserting trips:
+      0.301
+
+    Bulk inserting bus services:
+      1.156
+
+    bundle exec rake "reload_json[fixtures/large.json]"  8.88s user 0.89s system 86% cpu 11.274 total
+  VALUES
 end
