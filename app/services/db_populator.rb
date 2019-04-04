@@ -30,19 +30,15 @@ class DbPopulator
               bus = (all_buses[number] ||= begin
                 Bus.create!(number: number, model: trip['bus']['model']).tap do |bus|
                   services.each do |service|
-                    bus_service_worker.add(bus: bus, service: service)
+                    bus_service_worker.add(bus_id: bus.id, service_id: service.id)
                   end
                 end
               end)
 
-              # if bus.model != trip['bus']['model'] || bus.services != services
-              #   bus.update(model: trip['bus']['model'], services: services)
-              # end
-
               trip_worker.add(
-                from: from,
-                to: to,
-                bus: bus,
+                from_id: from.id,
+                to_id: to.id,
+                bus_id: bus.id,
                 start_time: trip['start_time'],
                 duration_minutes: trip['duration_minutes'],
                 price_cents: trip['price_cents'],
