@@ -17,7 +17,6 @@ def evaluate_metric
   end
 end
 
-
 namespace :optimization do
   task trips_controller: :environment do |_task, args|
     test_correctness('spec/controllers/trips_controller_spec.rb')
@@ -35,17 +34,72 @@ namespace :optimization do
     end
 
     evaluate_metric do |b|
-      DbPopulator.populate('fixtures/small.json')
+      file = 'small.json'
+      DbPopulator.populate("fixtures/#{file}")
       executor = TripsControllerExecutor.new
 
-      b.report('large.json') { executor.run }
+      b.report(file) { executor.run }
     end
 
     <<~RESULTS
       bundle exec rake optimization:trips_controller
 
       Initial value:
-        13.137 ips
+        7.187 ips
+
+      Render trips as a collection:
+        7.583
+
+      Render services as a collection:
+        9.880
+
+      Replace delimiter with view helper:
+        11.110
+
+      Fix n+1
+        18.567
+
+      Replace rendering of services with view helper:
+        25.831
+
+      ab -n 100 -c 1 http://localhost:3000/автобусы/Самара/Москва
+        With enabled meta_request:
+          Concurrency Level:      1
+          Time taken for tests:   4.692 seconds
+          Complete requests:      100
+          Failed requests:        0
+          Total transferred:      1087890 bytes
+          HTML transferred:       1014900 bytes
+          Requests per second:    21.31 [#/sec] (mean)
+          Time per request:       46.917 [ms] (mean)
+          Time per request:       46.917 [ms] (mean, across all concurrent requests)
+          Transfer rate:          226.44 [Kbytes/sec] received
+
+          Connection Times (ms)
+                        min  mean[+/-sd] median   max
+          Connect:        0    0   0.0      0       0
+          Processing:    38   47  11.8     41     100
+          Waiting:       38   47  11.8     41     100
+          Total:         38   47  11.8     41     101
+
+        With disabled meta_request:
+          Concurrency Level:      1
+          Time taken for tests:   3.201 seconds
+          Complete requests:      100
+          Failed requests:        0
+          Total transferred:      1084760 bytes
+          HTML transferred:       1014900 bytes
+          Requests per second:    31.24 [#/sec] (mean)
+          Time per request:       32.010 [ms] (mean)
+          Time per request:       32.010 [ms] (mean, across all concurrent requests)
+          Transfer rate:          330.94 [Kbytes/sec] received
+
+          Connection Times (ms)
+                        min  mean[+/-sd] median   max
+          Connect:        0    0   0.0      0       0
+          Processing:    27   32   6.7     29      60
+          Waiting:       27   32   6.7     29      60
+          Total:         27   32   6.7     29      60
 
     RESULTS
   end
