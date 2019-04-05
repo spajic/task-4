@@ -34,12 +34,59 @@ namespace :optimization do
     end
 
     evaluate_metric do |b|
-      file = 'small.json'
+      file = 'large.json'
       DbPopulator.populate("fixtures/#{file}")
       executor = TripsControllerExecutor.new
 
       b.report(file) { executor.run }
     end
+
+    # Session 2 (for large.json)
+
+    <<~RESULTS
+      Original version:
+        ab -n 10 -c 1 http://localhost:3000/автобусы/Самара/Москва
+          In dev mode mean = 20504 ms
+
+
+      Optimized after session 1:
+        ab -n 20 -c 1 http://localhost:3000/автобусы/Самара/Москва
+          In dev mode mean = 388 ms
+
+      RAILS_ENV=test ENABLE_CACHE=true bundle exec rake optimization:trips_controller
+
+      Initial value:
+        3.373 IPS
+
+      SQL optimization: eager_load instead preload + all required indexes
+        4.928
+
+      Enable caching:
+        6.404
+
+      ab -n 100 -c 1 http://localhost:3000/автобусы/Самара/Москва
+        Concurrency Level:      1
+        Time taken for tests:   17.733 seconds
+        Complete requests:      100
+        Failed requests:        0
+        Total transferred:      70281278 bytes
+        HTML transferred:       70211500 bytes
+        Requests per second:    5.64 [#/sec] (mean)
+        Time per request:       177.326 [ms] (mean)
+        Time per request:       177.326 [ms] (mean, across all concurrent requests)
+        Transfer rate:          3870.50 [Kbytes/sec] received
+
+        Connection Times (ms)
+                      min  mean[+/-sd] median   max
+        Connect:        0    0   0.0      0       0
+        Processing:   145  177  48.0    172     545
+        Waiting:      144  177  48.0    172     545
+        Total:        145  177  48.0    172     545
+
+      20504/177 = 115.84x
+    RESULTS
+
+    # Session 1 (for small.json)
 
     <<~RESULTS
       bundle exec rake optimization:trips_controller

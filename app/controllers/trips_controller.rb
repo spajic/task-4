@@ -4,7 +4,7 @@ class TripsController < ApplicationController
     @to = City.find_by_name!(params[:to])
 
     @trips = Trip
-      .includes(bus: :services)
+      .eager_load(bus: :services)
       .where(from: @from, to: @to)
       .order(:start_time)
   end
