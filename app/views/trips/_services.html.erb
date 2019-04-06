@@ -1,6 +1,4 @@
 <li>Сервисы в автобусе:</li>
 <ul>
-  <% services.each do |service| %>
-    <%= render "service", service: service %>
-  <% end %>
+  <%= render partial: "trips/service", collection: services, cached: true %>
 </ul>
