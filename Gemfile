@@ -10,6 +10,8 @@ gem 'bootsnap', '>= 1.1.0', require: false
 
 gem 'pghero'
 gem 'oj'
+gem 'activerecord-import'
+gem 'strong_migrations'
 
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
