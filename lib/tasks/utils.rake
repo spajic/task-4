@@ -1,7 +1,7 @@
 # Наивная загрузка данных из json-файла в БД
 # rake reload_json[fixtures/small.json]
-task :reload_json, [:file_name] => :environment do |_task, args|
-  json = JSON.parse(File.read(args.file_name))
+task :reload_json, :file_name do |_task, args|
+  json = JSON.parse(File.read(args[:file_name]))
 
   ActiveRecord::Base.transaction do
     City.delete_all
