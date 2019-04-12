@@ -77,6 +77,9 @@ GEM
     nokogiri (1.10.2)
       mini_portile2 (~> 2.4.0)
     pg (1.1.4)
+    pg_query (1.1.0)
+    pghero (2.2.0)
+      activerecord
     puma (3.12.1)
     rack (2.0.6)
     rack-test (1.1.0)
@@ -110,6 +113,10 @@ GEM
     rb-inotify (0.10.0)
       ffi (~> 1.0)
     ruby_dep (1.5.0)
+    skylight (3.1.5)
+      skylight-core (= 3.1.5)
+    skylight-core (3.1.5)
+      activesupport (>= 4.2.0)
     sprockets (3.7.2)
       concurrent-ruby (~> 1.0)
       rack (> 1, < 3)
@@ -138,8 +145,11 @@ DEPENDENCIES
   byebug
   listen (>= 3.0.5, < 3.2)
   pg (>= 0.18, < 2.0)
+  pg_query (>= 0.9.0)
+  pghero
   puma (~> 3.11)
   rails (~> 5.2.3)
+  skylight
   tzinfo-data
   web-console (>= 3.3.0)
 
