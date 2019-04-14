@@ -1,6 +1,12 @@
 require 'oj'
 
 class DbImporter
+  def initialize
+    @cities = {}
+    @services = {}
+    @buses = {}
+  end
+
   def call(source:)
     json = Oj.load_file(source)
 
@@ -9,6 +15,10 @@ class DbImporter
       create_from_json!(json)
     end
   end
+
+  private
+
+  attr_reader :cities, :services, :buses
 
   def clear_db!
     City.delete_all
@@ -19,41 +29,52 @@ class DbImporter
   end
 
   def create_from_json!(json)
-    cities = Set.new
-    services = Set.new
+    import_cities_and_services(json)
+    import_buses(json)
+    import_trips(json)
+  end
 
+  def import_cities_and_services(json)
     json.each do |trip|
-      cities << trip['from']
-      cities << trip['to']
+      cities[trip['from']] ||= City.new(name: trip['from'])
+      cities[trip['to']] ||= City.new(name: trip['to'])
 
       trip['bus']['services'].each do |service|
-        services << service
+        services[service] ||= Service.new(name: service)
       end
     end
 
-    cities.each do |city|
-      City.create(name: city)
-    end
+    City.import %i[name], cities.values, syncronize: true, raise_error: true
+    Service.import %i[name], services.values, syncronize: true, raise_error: true
+  end
 
-    services.each do |service|
-      Service.create(name: service)
-    end
-
+  def import_buses(json)
     json.each do |trip|
-      from = City.find_by(name: trip['from'])
-      to = City.find_by(name: trip['to'])
-      services = Service.where(name: trip['bus']['services'])
-      bus = Bus.find_or_create_by(number: trip['bus']['number'])
-      bus.update(model: trip['bus']['model'], services: services)
+      bus = buses[trip['bus']['number']] || Bus.new(number: trip['bus']['number'])
+      bus.model = trip['bus']['model']
+      bus.services = services.values_at(*trip['bus']['services'])
+      buses[trip['bus']['number']] = bus
+    end
 
-      Trip.create!(
+    Bus.import buses.values, recursive: true, syncronize: true, raise_error: true
+  end
+
+  def import_trips(json)
+    trips = []
+    json.each do |trip|
+      from = cities[trip['from']]
+      to = cities[trip['to']]
+
+      trips << Trip.new(
         from: from,
         to: to,
-        bus: bus,
+        bus: buses[trip['bus']['number']],
         start_time: trip['start_time'],
         duration_minutes: trip['duration_minutes'],
         price_cents: trip['price_cents']
       )
     end
+
+    Trip.import trips, raise_error: true
   end
 end
