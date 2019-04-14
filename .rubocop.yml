@@ -1,0 +1,26 @@
+AllCops:
+  TargetRubyVersion: 2.6.1
+  Exclude:
+    - "config/**/*"
+    - "db/**/*"
+    - "bin/**"
+    - "*Gemfile*"
+    - "tmp/**/*"
+
+Metrics/AbcSize:
+  Enabled: false
+
+Metrics/LineLength:
+  Max: 120
+
+Metrics/MethodLength:
+  Max: 15
+
+Style/ClassAndModuleChildren:
+  Enabled: false
+
+Style/Documentation:
+  Enabled: false
+
+Style/FrozenStringLiteralComment:
+  Enabled: false
