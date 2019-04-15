@@ -1,0 +1,22 @@
+#!/usr/bin/env ruby
+
+require './app/services/entities_processing'
+require 'ruby-prof'
+require 'active_record'
+require 'pg'
+require 'yaml'
+require 'oj'
+
+config = YAML.load_file('config/database.yml')["development"].
+  merge!('url' => ENV.fetch("DATABASE_URL"))
+
+ActiveRecord::Base.establish_connection(config)
+
+RubyProf.measure_mode = RubyProf::WALL_TIME
+
+result = RubyProf.profile do
+  EntitiesProcessing.call(file_name: 'fixtures/small.json', with_gc: false)
+end
+
+printer = RubyProf::CallTreePrinter.new(result)
+printer.print(path: "tmp", profile: 'profile_cpu')

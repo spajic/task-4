@@ -1,0 +1,23 @@
+#!/usr/bin/env ruby
+
+require './app/services/entities_processing'
+require 'ruby-prof'
+require 'active_record'
+require 'pg'
+require 'yaml'
+require 'oj'
+
+config = YAML.load_file('config/database.yml')["development"].
+  merge!('url' => ENV.fetch("DATABASE_URL"))
+
+ActiveRecord::Base.establish_connection(config)
+
+GC.enable_stats
+RubyProf.measure_mode = RubyProf::MEMORY
+
+result = RubyProf.profile do
+  EntitiesProcessing.call(file_name: 'fixtures/small.json')
+end
+
+printer = RubyProf::CallTreePrinter.new(result)
+printer.print(path: "tmp", profile: 'profile_memory')
