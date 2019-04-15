@@ -1,0 +1,24 @@
+#!/usr/bin/env ruby
+
+require 'active_record'
+require './app/models/application_record'
+require './app/models/bus'
+require './app/models/city'
+require './app/models/service'
+require './app/models/trip'
+require './app/services/entities_processing'
+
+require 'benchmark/ips'
+require 'oj'
+require 'memory_profiler'
+
+config = YAML.load_file('config/database.yml')["development"].
+  merge!('url' => ENV.fetch("DATABASE_URL"), 'pool' => 15)
+
+ActiveRecord::Base.establish_connection(config)
+
+report = MemoryProfiler.report do
+  EntitiesProcessing.call(file_name: 'fixtures/small.json')
+end
+
+report.pretty_print(scale_bytes: true)
