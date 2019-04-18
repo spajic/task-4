@@ -111,6 +111,7 @@ GEM
     rb-fsevent (0.10.3)
     rb-inotify (0.10.0)
       ffi (~> 1.0)
+    ruby-prof (0.17.0)
     ruby_dep (1.5.0)
     skylight (3.1.5)
       skylight-core (= 3.1.5)
@@ -147,6 +148,7 @@ DEPENDENCIES
   pghero
   puma (~> 3.11)
   rails (~> 5.2.3)
+  ruby-prof
   skylight
   tzinfo-data
   web-console (>= 3.3.0)
