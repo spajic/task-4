@@ -22,7 +22,7 @@ def reevaluate_metric
     bench.report('small') { TripsService.load('fixtures/small.json') }
     # bench.report('medium') { TripsService.load('fixtures/medium.json') }
     # bench.report('large') { TripsService.load('fixtures/large.json') }
-    bench.compare!
+    # bench.compare!
   end
 end
 
@@ -53,10 +53,11 @@ def memory_profile
     TripsService.load('fixtures/small.json')
   end
 
-  report.pretty_print(scale_bytes: true)
+  # report.pretty_print(scale_bytes: true)
+  report.pretty_print(to_file: 'memory.txt')
 end
 
-# reevaluate_metric
+reevaluate_metric
 test_correctness
 # cpu_profile
-memory_profile
+# memory_profile

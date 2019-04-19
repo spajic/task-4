@@ -9,7 +9,8 @@ gem 'puma', '~> 3.11'
 gem 'bootsnap', '>= 1.1.0', require: false
 gem 'skylight'
 gem 'pghero'
-gem 'ruby-prof'
+gem 'activerecord-import'
+gem 'oj'
 
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
@@ -23,6 +24,11 @@ group :development do
 end
 
 group :test do
+  gem 'rspec'
+  gem 'rspec-rails'
+  gem 'rspec-sqlimit'
+  gem 'test-prof'
+  gem 'database_cleaner'
 end
 
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem

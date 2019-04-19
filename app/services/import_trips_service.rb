@@ -1,25 +1,40 @@
 # frozen_string_literal: true
 
-require 'json'
+# require 'oj'
 
-class TripsService
+class ImportTripsService
   def self.load(file_name)
     new(file_name).load
   end
 
+  attr_reader :json
+
   def initialize(file_name)
-    @file_name = file_name
+    # @file_name = file_name
+    @json = Oj.load(File.read(file_name))
   end
 
   def load
-    json = JSON.parse(File.read(@file_name))
+    # json = Oj.load(File.read(file_name))
 
-    ::ActiveRecord::Base.transaction do
+    ActiveRecord::Base.transaction do
       City.delete_all
       Bus.delete_all
       Service.delete_all
       Trip.delete_all
-      ::ActiveRecord::Base.connection.execute('delete from buses_services;')
+      ActiveRecord::Base.connection.execute('delete from buses_services;')
+
+      # def load_cities
+      #   sities = []
+
+      #   json.each do |trip|
+      #     sities << trip['from']
+      #     sities << trip['to']
+      #   end
+
+      #   sities.uniq!
+      #   City.import
+      # end
 
       json.each do |trip|
         from = City.find_or_create_by(name: trip['from'])
