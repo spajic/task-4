@@ -1,3 +1,4 @@
+<% cache [trip, trip.bus] do %>
 <ul>
   <li><%= "Отправление: #{ trip.start_time }" %></li>
   <li><%= "Прибытие: #{ (Time.parse(trip.start_time) + trip.duration_minutes.minutes ).strftime('%H:%M')}" %></li>
@@ -17,3 +18,4 @@
   <% end %>
 </ul>
 ====================================================
+<% end %>
