@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_04_20_215325) do
+ActiveRecord::Schema.define(version: 2019_04_21_185932) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -45,4 +45,6 @@ ActiveRecord::Schema.define(version: 2019_04_20_215325) do
     t.integer "bus_id"
   end
 
+  add_foreign_key "trips", "cities", column: "from_id"
+  add_foreign_key "trips", "cities", column: "to_id"
 end
