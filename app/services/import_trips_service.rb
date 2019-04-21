@@ -37,15 +37,13 @@ class ImportTripsService
 
   def load_cities
     sities_data = []
-    # bar = ProgressBar.new(json.length)
     json.each do |trip|
       sities_data << { name: trip['from'] }
       sities_data << { name: trip['to'] }
-      # bar.increment!
     end
 
     sities_data.uniq!
-    result = City.import([:name], sities_data, returning: :name, **options)
+    result = City.import(sities_data, returning: :name, **options)
     processing_result result, sities
   end
 

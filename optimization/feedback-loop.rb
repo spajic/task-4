@@ -11,57 +11,20 @@ require './app/models/bus'
 require './app/models/service'
 require './app/models/trip'
 require './app/models/buses_service'
-require 'Oj'
+require 'oj'
 require 'progress_bar'
 require 'activerecord-import'
 
 config = YAML.load_file('config/database.yml')['development']
 ActiveRecord::Base.establish_connection(config)
 
-GC.enable_stats
-RubyProf.measure_mode = RubyProf::WALL_TIME
-
 def reevaluate_metric
   Benchmark.ips do |bench|
     bench.report('small') { ImportTripsService.load('fixtures/small.json') }
-    # bench.report('medium') { TripsService.load('fixtures/medium.json') }
-    # bench.report('large') { TripsService.load('fixtures/large.json') }
-    # bench.compare!
+    bench.report('medium') { ImportTripsService.load('fixtures/medium.json') }
+    bench.report('large') { ImportTripsService.load('fixtures/large.json') }
+    bench.compare!
   end
-end
-
-def test_correctness
-  # File.write('result.json', '')
-  # work('fixtures/data_fixture.txt')
-  # expected_result = File.read('fixtures/expected_result_fixture.json')
-  # passed = expected_result == File.read('result.json')
-  # passed ? puts('PASSED') : puts('!!! TEST FAILED !!!')
-end
-
-def cpu_profile
-  result = RubyProf.profile do
-    ImportTripsService.load('fixtures/small.json')
-  end
-
-  # File.open './cpu-time-call-stack.html', 'w' do |file|
-  #   RubyProf::CallStackPrinter.new(result).print(file)
-  # end
-
-  File.open './wall-time-cal-tree.txt', 'w' do |_file|
-    RubyProf::CallTreePrinter.new(result).print(path: '.', profile: 'profile')
-  end
-end
-
-def memory_profile
-  report = MemoryProfiler.report do
-    ImportTripsService.load('fixtures/small.json')
-  end
-
-  # report.pretty_print(scale_bytes: true)
-  report.pretty_print(to_file: 'memory.txt')
 end
 
 reevaluate_metric
-test_correctness
-# cpu_profile
-# memory_profile
