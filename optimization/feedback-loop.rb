@@ -5,11 +5,15 @@ require 'ruby-prof'
 require 'memory_profiler'
 require 'active_record'
 require './app/models/application_record'
-require './app/services/trips_service'
+require './app/services/import_trips_service'
 require './app/models/city'
 require './app/models/bus'
 require './app/models/service'
 require './app/models/trip'
+require './app/models/buses_service'
+require 'Oj'
+require 'progress_bar'
+require 'activerecord-import'
 
 config = YAML.load_file('config/database.yml')['development']
 ActiveRecord::Base.establish_connection(config)
@@ -19,7 +23,7 @@ RubyProf.measure_mode = RubyProf::WALL_TIME
 
 def reevaluate_metric
   Benchmark.ips do |bench|
-    bench.report('small') { TripsService.load('fixtures/small.json') }
+    bench.report('small') { ImportTripsService.load('fixtures/small.json') }
     # bench.report('medium') { TripsService.load('fixtures/medium.json') }
     # bench.report('large') { TripsService.load('fixtures/large.json') }
     # bench.compare!
@@ -36,7 +40,7 @@ end
 
 def cpu_profile
   result = RubyProf.profile do
-    TripsService.load('fixtures/small.json')
+    ImportTripsService.load('fixtures/small.json')
   end
 
   # File.open './cpu-time-call-stack.html', 'w' do |file|
@@ -50,7 +54,7 @@ end
 
 def memory_profile
   report = MemoryProfiler.report do
-    TripsService.load('fixtures/small.json')
+    ImportTripsService.load('fixtures/small.json')
   end
 
   # report.pretty_print(scale_bytes: true)

@@ -10,20 +10,21 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_04_20_191017) do
+ActiveRecord::Schema.define(version: 2019_04_20_215325) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
   create_table "buses", force: :cascade do |t|
-    t.string "number"
+    t.string "number", null: false
     t.string "model"
-    t.index ["number"], name: "index_buses_on_number"
+    t.index ["number"], name: "index_buses_on_number", unique: true
   end
 
   create_table "buses_services", force: :cascade do |t|
     t.integer "bus_id"
     t.integer "service_id"
+    t.index ["bus_id", "service_id"], name: "index_buses_services_on_bus_id_and_service_id", unique: true
   end
 
   create_table "cities", force: :cascade do |t|
@@ -31,7 +32,8 @@ ActiveRecord::Schema.define(version: 2019_04_20_191017) do
   end
 
   create_table "services", force: :cascade do |t|
-    t.string "name"
+    t.string "name", null: false
+    t.index ["name"], name: "index_services_on_name", unique: true
   end
 
   create_table "trips", force: :cascade do |t|

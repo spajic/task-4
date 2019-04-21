@@ -1,91 +1,117 @@
 # frozen_string_literal: true
 
-# require 'oj'
-
 class ImportTripsService
+  BATCH_SIZE = 1000
+
   def self.load(file_name)
     new(file_name).load
   end
 
-  attr_reader :json, :sities, :buses
+  attr_accessor :json, :sities, :buses, :services
 
   def initialize(file_name)
-    # @file_name = file_name
     @json = Oj.load(File.read(file_name))
     @sities = {}
     @buses = {}
+    @services = {}
   end
 
   def load
     ActiveRecord::Base.transaction do
-      City.delete_all
-      Bus.delete_all
-      Service.delete_all
-      Trip.delete_all
-      ActiveRecord::Base.connection.execute('delete from buses_services;')
-
+      clean_db!
       load_cities
       load_buses
-
-      json.each do |trip|
-        # from = City.find_or_create_by(name: trip['from'])
-        # to = City.find_or_create_by(name: trip['to'])
-        # services = []
-        # trip['bus']['services'].each do |service|
-        #   s = Service.find_or_create_by(name: service)
-        #   services << s
-        # end
-        # bus = Bus.find_or_create_by(number: trip['bus']['number'])
-        # bus.update(model: trip['bus']['model'], services: services)
-        # binding.pry
-        Trip.create!(
-          from_id: sities[trip['from']],
-          to_id: sities[trip['to']],
-          bus_id: buses[trip['bus']['number']],
-          start_time: trip['start_time'],
-          duration_minutes: trip['duration_minutes'],
-          price_cents: trip['price_cents']
-        )
-      end
+      load_services
+      load_buses_services
+      load_trips
     end
+  end
+
+  def clean_db!
+    BusesService.delete_all
+    Trip.delete_all
+    City.delete_all
+    Bus.delete_all
+    Service.delete_all
   end
 
   def load_cities
     sities_data = []
-
+    # bar = ProgressBar.new(json.length)
     json.each do |trip|
-      sities_data << [trip['from']]
-      sities_data << [trip['to']]
+      sities_data << { name: trip['from'] }
+      sities_data << { name: trip['to'] }
+      # bar.increment!
     end
 
     sities_data.uniq!
-
-    names = City.import([:name], sities_data, returning: :name)
-    ids = names.ids
-    names.results.each.with_index { |name, i| sities[name] = ids[i].to_i }
+    result = City.import([:name], sities_data, returning: :name, **options)
+    processing_result result, sities
   end
 
   def load_buses
     buses_data = []
-    # services = []
     json.each do |trip|
-      bus = Bus.new(number: trip['bus']['number'], model: trip['bus']['model'])
-      trip['bus']['services'].each do |service|
-        bus.services.build(name: service)
-      end
-      buses_data << bus
+      buses_data << {
+        number: trip['bus']['number'],
+        model: trip['bus']['model']
+      }
     end
-    binding.pry
-    numbers = Bus.import buses_data, recursive: true, returning: :number, on_duplicate_key_ignore: true
-    ids = numbers.ids
-    numbers.results.each.with_index { |number, i| buses[number] = ids[i].to_i }
-    #   trip['bus']['services'].each do |service|
-    #     s = Service.find_or_create_by(name: service)
-    #     services << s
-    #   end
-    # end
+    buses_data.uniq!
+    result = Bus.import(buses_data, returning: :number, **options)
+    processing_result result, buses
+  end
 
-    # bus = Bus.find_or_create_by(number: trip['bus']['number'])
-    # bus.update(model: trip['bus']['model'], services: services)
+  def load_services
+    services_data = []
+    json.each do |trip|
+      trip['bus']['services'].each do |service|
+        services_data << { name: service }
+      end
+    end
+    services_data.uniq!
+    result = Service.import(services_data, returning: :name, **options)
+    processing_result result, services
+  end
+
+  def load_buses_services
+    buses_services = []
+    json.each do |trip|
+      trip['bus']['services'].each do |service|
+        buses_services << {
+          bus_id: buses[trip['bus']['number']],
+          service_id: services[service]
+        }
+      end
+    end
+    buses_services.uniq!
+    BusesService.import(buses_services, options)
+  end
+
+  def load_trips
+    trips = []
+    json.each do |trip|
+      trips << {
+        from_id: sities[trip['from']],
+        to_id: sities[trip['to']],
+        bus_id: buses[trip['bus']['number']],
+        start_time: trip['start_time'],
+        duration_minutes: trip['duration_minutes'],
+        price_cents: trip['price_cents']
+      }
+    end
+
+    Trip.import(trips, options)
+  end
+
+  def options
+    {
+      batch_size: BATCH_SIZE
+    }
+  end
+
+  def processing_result(selection, collection = {})
+    ids = selection.ids
+    selection.results.each.with_index { |attr, i| collection[attr] = ids[i].to_i }
   end
 end

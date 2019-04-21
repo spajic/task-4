@@ -11,9 +11,10 @@ describe ImportTripsService do
     expect(Trip.count).to eq 10
     expect(Service.count).to eq 2
     expect(Bus.count).to eq 1
+    expect(BusesService.count).to eq 2
   end
 
   it 'has constant number of requests to DB' do
-    expect { subject }.not_to exceed_query_limit(96)
+    expect { subject }.not_to exceed_query_limit(12)
   end
 end
