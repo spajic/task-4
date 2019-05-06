@@ -7,6 +7,13 @@ gem 'rails', '~> 5.2.3'
 gem 'pg', '>= 0.18', '< 2.0'
 gem 'puma', '~> 3.11'
 gem 'bootsnap', '>= 1.1.0', require: false
+gem 'oj'
+gem 'activerecord-import'
+gem 'dotenv-rails'
+gem 'newrelic_rpm'
+gem 'pghero'
+gem 'pg_query', '>= 0.9.0'
+gem 'strong_migrations'
 
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
@@ -20,6 +27,7 @@ group :development do
 end
 
 group :test do
+  gem 'rspec'
 end
 
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
