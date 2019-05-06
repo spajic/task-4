@@ -15,3 +15,6 @@ end
 
 # add indicies to trips
 # 12.471791   0.888674  13.360465 ( 14.467896)
+
+# add indicies to cities, services and buses
+# 11.874181   0.867256  12.743072 ( 13.819131)
