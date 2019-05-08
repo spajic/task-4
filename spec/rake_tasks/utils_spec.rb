@@ -14,5 +14,6 @@ describe 'stats:fix_all'do
                    .and(change(Trip, :count).by(10))
                    .and(change(City, :count).by(2))
                    .and(change(Service, :count).by(Service::SERVICES.size))
+                   .and(change { Bus.last&.services&.count }.from(nil).to(2))
   end
 end

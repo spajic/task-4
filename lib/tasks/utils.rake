@@ -23,81 +23,61 @@ task :reload_json, [:file_name] => :environment do |_task, args|
     DROP INDEX index_services_on_name
     SQL
 
-    # create services; add primary key and index; load
+    # add temp columns to trips and import data
+    migration.add_column(:trips, :bus, :jsonb)
+    migration.add_column(:trips, :from, :varchar)
+    migration.add_column(:trips, :to, :varchar)
+    Trip.reset_column_information
+    Trip.import(json, validate: false, no_returning: true)
+
+    # create services; add primary key and index
     services = Service::SERVICES.map { |name| { name: name } }
     Service.import(services)
     migration.execute('ALTER TABLE services ADD PRIMARY KEY (id);')
+    Service.primary_key = :id
     migration.add_index(:services, :name, unique: true)
-    services = Service.pluck(:name, :id).to_h
 
-    # create values to insert
-    #values = json.reduce({ cities: [], buses: [], buses_services: [], trips: [] }) do |h, obj|
-    #  h[:cities] += [{ name: obj['from'] }, { name: obj['to'] }]
-    #  h[:buses] << { model: obj.dig('bus', 'model'), number: obj.dig('bus', 'number') }
-    #  h[:buses_services] += obj.dig('bus', 'services').map do |serv_name|
-    #    { bus_id: obj.dig('bus', 'number'), service_id: services[serv_name] }
-    #  end
-    #  h[:trips] << { from_id: obj['from'],
-    #                 to_id: obj['to'],
-    #                 bus_id: obj.dig('bus', 'number'),
-    #                 start_time: obj['start_time'],
-    #                 duration_minutes: obj['duration_minutes'],
-    #                 price_cents: obj['price_cents'] }
-    #  h
-    #end
-
-    # create cities; add primary key and index; load
-    cities = json.reduce([]) { |arr, obj| arr += [obj['from'], obj['to']] }.uniq
-    cities = cities.map { |name| { name: name } }
-    City.import(cities)
-    #City.import(values[:cities].uniq)
+    # create cities; add primary key and index
+    cities = (Trip.distinct.pluck(:from) | Trip.distinct.pluck(:to)).map(&Array.method(:wrap))
+    City.import([:name], cities)
+    City.primary_key = :id
     migration.execute('ALTER TABLE cities ADD PRIMARY KEY (id);')
     migration.add_index(:cities, :name, unique: true)
-    cities = City.pluck(:name, :id).to_h
 
-    # create buses; add primary key and index; load
-    buses = json.map do |obj|
-      { model: obj.dig('bus', 'model'), number: obj.dig('bus', 'number') }
-    end.uniq
+    # create buses; add primary key and index
+    buses = Trip.select("DISTINCT data")
+                .from("(SELECT (bus - 'services') AS data FROM trips) AS subquery")
+                .map(&:data)
     Bus.import(buses)
-    #Bus.import(values[:buses].uniq)
     migration.execute('ALTER TABLE buses ADD PRIMARY KEY (id);')
+    Bus.primary_key = :id
     migration.add_index(:buses, :number, unique: true)
-    buses = Bus.pluck(:number, :id).to_h
 
     # create buses_services; add primary key
     BusesService = Class.new(ActiveRecord::Base)
-    BusesService.table_name = 'buses_services'
-    buses_services = json.reduce([]) do |arr, obj|
-      arr += obj.dig('bus', 'services').map do |serv_name|
-        { bus_id: buses[obj.dig('bus', 'number')],
-          service_id: services[serv_name] }
-      end
-    end
-    #buses_services = values[:buses_services].uniq.map do |h|
-    #  h[:bus_id] = buses[h[:bus_id]]
-    #  h
-    #end
-    BusesService.import(buses_services)
+    buses_services =
+      Trip.unscoped
+          .joins("join buses on trips.bus->>'number' = buses.number")
+          .joins("join services on services.name =
+                 ANY(select jsonb_array_elements_text((trips.bus->>'services')::jsonb))")
+          .group('buses.id, services.id')
+          .pluck('buses.id, services.id')
+    BusesService.import([:bus_id, :service_id], buses_services)
     Object.send(:remove_const, :BusesService)
     migration.execute('ALTER TABLE buses_services ADD PRIMARY KEY (id);')
 
-    # create trips; add primary key
-    trips = json.map do |trip|
-      { from_id: cities[trip['from']],
-        to_id: cities[trip['to']],
-        bus_id: buses[trip.dig('bus', 'number')],
-        start_time: trip['start_time'],
-        duration_minutes: trip['duration_minutes'],
-        price_cents: trip['price_cents'] }
-    end
-    #trips = values[:trips].uniq.map do |h|
-    #  h[:from_id] = cities[h[:from_id]]
-    #  h[:to_id]   = cities[h[:to_id]]
-    #  h[:bus_id]  = buses[h[:bus_id]]
-    #  h
-    #end
-    Trip.import(trips)
+    # update trips; remove temp columns; add primary key
+    Trip.where("trips.bus->>'model' = buses.model")
+        .where("trips.bus->>'number' = buses.number")
+        .update_all('bus_id = buses.id FROM buses')
+    Trip.where("trips.from = services.name")
+        .update_all('from_id = services.id FROM services')
+    Trip.where("trips.to = services.name")
+        .update_all('to_id = services.id FROM services')
+    migration.remove_column(:trips, :bus)
+    migration.remove_column(:trips, :from)
+    migration.remove_column(:trips, :to)
     migration.execute('ALTER TABLE trips ADD PRIMARY KEY (id);')
+    Trip.primary_key = :id
   end
 end
