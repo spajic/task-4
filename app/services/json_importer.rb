@@ -1,13 +1,12 @@
   class JsonImporter
+    def initialize
+      @service = {}
+    end
     def import_json_to_db(file_path:)
       json = JSON.parse(File.read(file_path))
 
       ActiveRecord::Base.transaction do
-        City.delete_all
-        Bus.delete_all
-        Service.delete_all
-        Trip.delete_all
-        ActiveRecord::Base.connection.execute('delete from buses_services;')
+        delete_existing_records
     
         json.each do |trip|
           from = City.find_or_create_by(name: trip['from'])
@@ -31,4 +30,12 @@
         end
       end
     end
+
+   def delete_existing_records
+    City.delete_all
+    Bus.delete_all
+    Service.delete_all
+    Trip.delete_all
+    ActiveRecord::Base.connection.execute('delete from buses_services;')
+   end
   end

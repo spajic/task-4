@@ -1,9 +1,9 @@
 class Trip < ApplicationRecord
   HHMM_REGEXP = /([0-1][0-9]|[2][0-3]):[0-5][0-9]/
 
-  belongs_to :from, class_name: 'City'
-  belongs_to :to, class_name: 'City'
-  belongs_to :bus
+  belongs_to :from, class_name: 'City', foreign_key: :from_id, optional: true
+  belongs_to :to, class_name: 'City', foreign_key: :to_id, optional: true
+  belongs_to :bus, foreign_key: :bus_id, optional: true
 
   validates :from, presence: true
   validates :to, presence: true
