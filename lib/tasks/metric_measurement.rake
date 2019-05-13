@@ -29,3 +29,8 @@ end
 # == Loading data from fixtures/small.json ==
 # Reload complete!
 #   1.585816   0.067304   1.655319 (  1.651922)
+
+
+# Loading data from fixtures/large.json ==
+# Reload complete!
+#  33.660827   0.582401  34.245360 (40.213537)
