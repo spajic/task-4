@@ -24,3 +24,8 @@ end
 # == Loading data from fixtures/small.json ==
 # Reload complete!
 #  14.654087   0.681433  15.337232 ( 16.270607)
+
+# add Oj and activerecord-import
+# == Loading data from fixtures/small.json ==
+# Reload complete!
+#   1.585816   0.067304   1.655319 (  1.651922)
