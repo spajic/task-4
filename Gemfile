@@ -12,6 +12,7 @@ gem 'activerecord-import'
 gem 'newrelic_rpm'
 gem 'pghero'
 gem 'pg_query', '>= 0.9.0'
+gem 'ruby-prof'
 gem 'strong_migrations'
 
 group :development, :test do

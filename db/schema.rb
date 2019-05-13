@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_05_12_223139) do
+ActiveRecord::Schema.define(version: 2019_05_13_023411) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
@@ -60,8 +60,6 @@ ActiveRecord::Schema.define(version: 2019_05_12_223139) do
     t.index ["start_time"], name: "index_trips_on_start_time"
   end
 
-  add_foreign_key "buses_services", "buses", on_delete: :cascade
-  add_foreign_key "buses_services", "services", on_delete: :cascade
   add_foreign_key "trips", "cities", column: "from_id", on_delete: :cascade
   add_foreign_key "trips", "cities", column: "to_id", on_delete: :cascade
 end

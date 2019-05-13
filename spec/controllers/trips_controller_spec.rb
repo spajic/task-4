@@ -7,8 +7,7 @@ RSpec.describe TripsController, type: :controller do
       get :index, params: { from: 'Сочи', to: 'Тула'}
     end
 
-    it 'populates correct data' do
-      
+    it 'populates correct data' do 
       Trip.where(from: 'Сочи', to: 'Тула').find_each do |trip|
         expect(response.body).to include?("Отправление: #{trip.start_time}")
         expect(response.body).to include?("Автобус: #{trip.bus.model} №#{trip.bus.number}")

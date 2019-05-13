@@ -1,7 +1,7 @@
 require 'spec_helper'
 describe 'Services::JsonImporter' do
   describe '#import_json_to_db', focus: true do
-    it 'imports eight records of Trip into db' do
+    it 'imports eight records of Trip into db', focus: true do
       expect { import_file }.to change(Trip, :count).by(8)
     end
 
