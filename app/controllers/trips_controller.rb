@@ -5,6 +5,6 @@ class TripsController < ApplicationController
     @trips = Trip.preload(:bus, :services)
                  .where(from: @from, to: @to)
                  .select_finish_time
-                 .order(:start_time).load
+                 .order(:start_time)#.load
   end
 end

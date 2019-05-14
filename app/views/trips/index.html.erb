@@ -2,7 +2,26 @@
   <%= "Автобусы #{@from.name} – #{@to.name}" %>
 </h1>
 <h2>
-  <%= "В расписании #{@trips.size} рейсов" %>
+  <%= "В расписании #{@trips.count(:all)} рейсов" %>
 </h2>
 
-<%= render partial: 'trip', collection: @trips, spacer_template: 'delimiter' %>
+<% @trips.find_each.with_index do |trip, index| %>
+  <% unless index.zero? %>
+  ====================================================
+  <% end %>
+  <ul>
+    <li><%= "Отправление: #{trip.start_time}" %></li>
+    <li><%= "Прибытие: #{trip.finish_time}" %></li>
+    <li><%= "В пути: #{trip.duration_minutes / 60}ч. #{trip.duration_minutes % 60}мин." %></li>
+    <li><%= "Цена: #{trip.price_cents / 100}р. #{trip.price_cents % 100}коп." %></li>
+    <li><%= "Автобус: #{trip.bus.model} №#{trip.bus.number}" %></li>
+    <% if trip.services.any? %>
+      <li>Сервисы в автобусе:</li>
+    <% end %>
+    <ul>
+      <% trip.services.each do |service| %>
+        <li><%= "#{service.name}" %></li>
+      <% end %>
+    </ul>
+  </ul>
+<% end %>
