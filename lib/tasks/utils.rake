@@ -20,7 +20,9 @@ task :reload_json, [:file_name] => :environment do |_task, args|
     ALTER TABLE buses_services DROP CONSTRAINT buses_services_pkey;
     DROP INDEX index_cities_on_name;
     DROP INDEX index_buses_on_number;
-    DROP INDEX index_services_on_name
+    DROP INDEX index_services_on_name;
+    DROP INDEX index_buses_services_on_bus_id;
+    DROP INDEX index_trips_on_from_id_and_to_id_and_start_time;
     SQL
 
     # add temp columns to trips and import data
@@ -65,19 +67,21 @@ task :reload_json, [:file_name] => :environment do |_task, args|
     BusesService.import([:bus_id, :service_id], buses_services)
     Object.send(:remove_const, :BusesService)
     migration.execute('ALTER TABLE buses_services ADD PRIMARY KEY (id);')
+    migration.add_index(:buses_services, :bus_id)
 
     # update trips; remove temp columns; add primary key
     Trip.where("trips.bus->>'model' = buses.model")
         .where("trips.bus->>'number' = buses.number")
         .update_all('bus_id = buses.id FROM buses')
-    Trip.where("trips.from = services.name")
-        .update_all('from_id = services.id FROM services')
-    Trip.where("trips.to = services.name")
-        .update_all('to_id = services.id FROM services')
+    Trip.where("trips.from = cities.name")
+        .update_all('from_id = cities.id FROM cities')
+    Trip.where("trips.to = cities.name")
+        .update_all('to_id = cities.id FROM cities')
     migration.remove_column(:trips, :bus)
     migration.remove_column(:trips, :from)
     migration.remove_column(:trips, :to)
     migration.execute('ALTER TABLE trips ADD PRIMARY KEY (id);')
     Trip.primary_key = :id
+    migration.add_index(:trips, [:from_id, :to_id, :start_time], order: { start_time: :asc })
   end
 end
