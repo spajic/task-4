@@ -4,6 +4,7 @@ class Trip < ApplicationRecord
   belongs_to :from, class_name: 'City'
   belongs_to :to, class_name: 'City'
   belongs_to :bus
+  has_many :services, through: :bus
 
   validates :from, presence: true
   validates :to, presence: true
@@ -14,6 +15,16 @@ class Trip < ApplicationRecord
   validates :duration_minutes, numericality: { greater_than: 0 }
   validates :price_cents, presence: true
   validates :price_cents, numericality: { greater_than: 0 }
+
+  scope :select_finish_time, -> {
+    select(<<-SQL.squish)
+    *,
+    to_char(
+      start_time::time + (duration_minutes || ' minutes')::interval,
+      'HH24:MI'
+    ) AS finish_time
+    SQL
+  }
 
   def to_h
     {
