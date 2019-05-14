@@ -11,6 +11,7 @@
   - gem strong_migrations
   - benchmark
   - apache benchmark testing
+  - siege
 
 ![pg_hero](before/pg_hero_advice.png)
 
@@ -139,3 +140,10 @@ As we can see from the results above after getting rid of partials and rendering
 - Time per request reducded from 24723.295 [ms] (mean) to 4516.931 [ms] (mean)
 - Requests per second increased from 0.04 [#/sec] to 0.22 [#/sec] (mean)
 
+
+
+On the screenshots below we can observe that slowest queries and transactions metrics were improved as well:
+
+![slowest_queries](after/slowest_queries_after.png)
+![slow_queries](after/slow_queries_after.png)
+![transactions](after/transactions_after.png)
